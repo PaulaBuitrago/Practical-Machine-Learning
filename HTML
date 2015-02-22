@@ -1,0 +1,667 @@
+ 
+
+Practical Machine Learning
+
+Paula Buitrago
+
+The procedure used to predict the classe variable as a function of some of the predictors was:
+1.The nearZeroVar function was used to determine which variables had a lesser effect on the outcome based on the frequency ratio; then, those predictors with a frequency ratio lower than 1000 were discarded from the training data set.
+library(ggplot2);library(caret);
+## Loading required package: lattice
+setwd("C:/Users/Paula/Desktop/PML PROJECT")
+training<-read.csv("pml-training.csv")
+testing<-read.csv("pml-testing.csv")
+nsv<-nearZeroVar(training,saveMetrics=TRUE)
+nsv
+##                            freqRatio percentUnique zeroVar   nzv
+## X                           1.000000  100.00000000   FALSE FALSE
+## user_name                   1.100679    0.03057792   FALSE FALSE
+## raw_timestamp_part_1        1.000000    4.26562022   FALSE FALSE
+## raw_timestamp_part_2        1.000000   85.53154622   FALSE FALSE
+## cvtd_timestamp              1.000668    0.10192641   FALSE FALSE
+## new_window                 47.330049    0.01019264   FALSE  TRUE
+## num_window                  1.000000    4.37264295   FALSE FALSE
+## roll_belt                   1.101904    6.77810621   FALSE FALSE
+## pitch_belt                  1.036082    9.37722964   FALSE FALSE
+## yaw_belt                    1.058480    9.97349913   FALSE FALSE
+## total_accel_belt            1.063160    0.14779329   FALSE FALSE
+## kurtosis_roll_belt       1921.600000    2.02323922   FALSE  TRUE
+## kurtosis_picth_belt       600.500000    1.61553358   FALSE  TRUE
+## kurtosis_yaw_belt          47.330049    0.01019264   FALSE  TRUE
+## skewness_roll_belt       2135.111111    2.01304658   FALSE  TRUE
+## skewness_roll_belt.1      600.500000    1.72255631   FALSE  TRUE
+## skewness_yaw_belt          47.330049    0.01019264   FALSE  TRUE
+## max_roll_belt               1.000000    0.99378249   FALSE FALSE
+## max_picth_belt              1.538462    0.11211905   FALSE FALSE
+## max_yaw_belt              640.533333    0.34654979   FALSE  TRUE
+## min_roll_belt               1.000000    0.93772296   FALSE FALSE
+## min_pitch_belt              2.192308    0.08154113   FALSE FALSE
+## min_yaw_belt              640.533333    0.34654979   FALSE  TRUE
+## amplitude_roll_belt         1.290323    0.75425543   FALSE FALSE
+## amplitude_pitch_belt        3.042254    0.06625217   FALSE FALSE
+## amplitude_yaw_belt         48.525253    0.01528896   FALSE  TRUE
+## var_total_accel_belt        1.426829    0.33126083   FALSE FALSE
+## avg_roll_belt               1.066667    0.97339721   FALSE FALSE
+## stddev_roll_belt            1.039216    0.35164611   FALSE FALSE
+## var_roll_belt               1.615385    0.48924676   FALSE FALSE
+## avg_pitch_belt              1.375000    1.09061258   FALSE FALSE
+## stddev_pitch_belt           1.161290    0.21914178   FALSE FALSE
+## var_pitch_belt              1.307692    0.32106819   FALSE FALSE
+## avg_yaw_belt                1.200000    1.22311691   FALSE FALSE
+## stddev_yaw_belt             1.693878    0.29558659   FALSE FALSE
+## var_yaw_belt                1.500000    0.73896647   FALSE FALSE
+## gyros_belt_x                1.058651    0.71348486   FALSE FALSE
+## gyros_belt_y                1.144000    0.35164611   FALSE FALSE
+## gyros_belt_z                1.066214    0.86127816   FALSE FALSE
+## accel_belt_x                1.055412    0.83579655   FALSE FALSE
+## accel_belt_y                1.113725    0.72877383   FALSE FALSE
+## accel_belt_z                1.078767    1.52379982   FALSE FALSE
+## magnet_belt_x               1.090141    1.66649679   FALSE FALSE
+## magnet_belt_y               1.099688    1.51870350   FALSE FALSE
+## magnet_belt_z               1.006369    2.32901845   FALSE FALSE
+## roll_arm                   52.338462   13.52563449   FALSE FALSE
+## pitch_arm                  87.256410   15.73234125   FALSE FALSE
+## yaw_arm                    33.029126   14.65701763   FALSE FALSE
+## total_accel_arm             1.024526    0.33635715   FALSE FALSE
+## var_accel_arm               5.500000    2.01304658   FALSE FALSE
+## avg_roll_arm               77.000000    1.68178575   FALSE  TRUE
+## stddev_roll_arm            77.000000    1.68178575   FALSE  TRUE
+## var_roll_arm               77.000000    1.68178575   FALSE  TRUE
+## avg_pitch_arm              77.000000    1.68178575   FALSE  TRUE
+## stddev_pitch_arm           77.000000    1.68178575   FALSE  TRUE
+## var_pitch_arm              77.000000    1.68178575   FALSE  TRUE
+## avg_yaw_arm                77.000000    1.68178575   FALSE  TRUE
+## stddev_yaw_arm             80.000000    1.66649679   FALSE  TRUE
+## var_yaw_arm                80.000000    1.66649679   FALSE  TRUE
+## gyros_arm_x                 1.015504    3.27693405   FALSE FALSE
+## gyros_arm_y                 1.454369    1.91621649   FALSE FALSE
+## gyros_arm_z                 1.110687    1.26388747   FALSE FALSE
+## accel_arm_x                 1.017341    3.95984099   FALSE FALSE
+## accel_arm_y                 1.140187    2.73672409   FALSE FALSE
+## accel_arm_z                 1.128000    4.03628580   FALSE FALSE
+## magnet_arm_x                1.000000    6.82397309   FALSE FALSE
+## magnet_arm_y                1.056818    4.44399144   FALSE FALSE
+## magnet_arm_z                1.036364    6.44684538   FALSE FALSE
+## kurtosis_roll_arm         246.358974    1.68178575   FALSE  TRUE
+## kurtosis_picth_arm        240.200000    1.67159311   FALSE  TRUE
+## kurtosis_yaw_arm         1746.909091    2.01304658   FALSE  TRUE
+## skewness_roll_arm         249.558442    1.68688207   FALSE  TRUE
+## skewness_pitch_arm        240.200000    1.67159311   FALSE  TRUE
+## skewness_yaw_arm         1746.909091    2.01304658   FALSE  TRUE
+## max_roll_arm               25.666667    1.47793293   FALSE  TRUE
+## max_picth_arm              12.833333    1.34033228   FALSE FALSE
+## max_yaw_arm                 1.227273    0.25991234   FALSE FALSE
+## min_roll_arm               19.250000    1.41677709   FALSE  TRUE
+## min_pitch_arm              19.250000    1.47793293   FALSE  TRUE
+## min_yaw_arm                 1.000000    0.19366018   FALSE FALSE
+## amplitude_roll_arm         25.666667    1.55947406   FALSE  TRUE
+## amplitude_pitch_arm        20.000000    1.49831821   FALSE  TRUE
+## amplitude_yaw_arm           1.037037    0.25991234   FALSE FALSE
+## roll_dumbbell               1.022388   84.20650290   FALSE FALSE
+## pitch_dumbbell              2.277372   81.74498012   FALSE FALSE
+## yaw_dumbbell                1.132231   83.48282540   FALSE FALSE
+## kurtosis_roll_dumbbell   3843.200000    2.02833554   FALSE  TRUE
+## kurtosis_picth_dumbbell  9608.000000    2.04362450   FALSE  TRUE
+## kurtosis_yaw_dumbbell      47.330049    0.01019264   FALSE  TRUE
+## skewness_roll_dumbbell   4804.000000    2.04362450   FALSE  TRUE
+## skewness_pitch_dumbbell  9608.000000    2.04872082   FALSE  TRUE
+## skewness_yaw_dumbbell      47.330049    0.01019264   FALSE  TRUE
+## max_roll_dumbbell           1.000000    1.72255631   FALSE FALSE
+## max_picth_dumbbell          1.333333    1.72765263   FALSE FALSE
+## max_yaw_dumbbell          960.800000    0.37203139   FALSE  TRUE
+## min_roll_dumbbell           1.000000    1.69197839   FALSE FALSE
+## min_pitch_dumbbell          1.666667    1.81429008   FALSE FALSE
+## min_yaw_dumbbell          960.800000    0.37203139   FALSE  TRUE
+## amplitude_roll_dumbbell     8.000000    1.97227602   FALSE FALSE
+## amplitude_pitch_dumbbell    8.000000    1.95189073   FALSE FALSE
+## amplitude_yaw_dumbbell     47.920200    0.01528896   FALSE  TRUE
+## total_accel_dumbbell        1.072634    0.21914178   FALSE FALSE
+## var_accel_dumbbell          6.000000    1.95698706   FALSE FALSE
+## avg_roll_dumbbell           1.000000    2.02323922   FALSE FALSE
+## stddev_roll_dumbbell       16.000000    1.99266130   FALSE FALSE
+## var_roll_dumbbell          16.000000    1.99266130   FALSE FALSE
+## avg_pitch_dumbbell          1.000000    2.02323922   FALSE FALSE
+## stddev_pitch_dumbbell      16.000000    1.99266130   FALSE FALSE
+## var_pitch_dumbbell         16.000000    1.99266130   FALSE FALSE
+## avg_yaw_dumbbell            1.000000    2.02323922   FALSE FALSE
+## stddev_yaw_dumbbell        16.000000    1.99266130   FALSE FALSE
+## var_yaw_dumbbell           16.000000    1.99266130   FALSE FALSE
+## gyros_dumbbell_x            1.003268    1.22821323   FALSE FALSE
+## gyros_dumbbell_y            1.264957    1.41677709   FALSE FALSE
+## gyros_dumbbell_z            1.060100    1.04984201   FALSE FALSE
+## accel_dumbbell_x            1.018018    2.16593619   FALSE FALSE
+## accel_dumbbell_y            1.053061    2.37488533   FALSE FALSE
+## accel_dumbbell_z            1.133333    2.08949139   FALSE FALSE
+## magnet_dumbbell_x           1.098266    5.74864948   FALSE FALSE
+## magnet_dumbbell_y           1.197740    4.30129447   FALSE FALSE
+## magnet_dumbbell_z           1.020833    3.44511263   FALSE FALSE
+## roll_forearm               11.589286   11.08959331   FALSE FALSE
+## pitch_forearm              65.983051   14.85577413   FALSE FALSE
+## yaw_forearm                15.322835   10.14677403   FALSE FALSE
+## kurtosis_roll_forearm     228.761905    1.64101519   FALSE  TRUE
+## kurtosis_picth_forearm    226.070588    1.64611151   FALSE  TRUE
+## kurtosis_yaw_forearm       47.330049    0.01019264   FALSE  TRUE
+## skewness_roll_forearm     231.518072    1.64611151   FALSE  TRUE
+## skewness_pitch_forearm    226.070588    1.62572623   FALSE  TRUE
+## skewness_yaw_forearm       47.330049    0.01019264   FALSE  TRUE
+## max_roll_forearm           27.666667    1.38110284   FALSE  TRUE
+## max_picth_forearm           2.964286    0.78992967   FALSE FALSE
+## max_yaw_forearm           228.761905    0.22933442   FALSE  TRUE
+## min_roll_forearm           27.666667    1.37091020   FALSE  TRUE
+## min_pitch_forearm           2.862069    0.87147080   FALSE FALSE
+## min_yaw_forearm           228.761905    0.22933442   FALSE  TRUE
+## amplitude_roll_forearm     20.750000    1.49322189   FALSE  TRUE
+## amplitude_pitch_forearm     3.269231    0.93262664   FALSE FALSE
+## amplitude_yaw_forearm      59.677019    0.01528896   FALSE  TRUE
+## total_accel_forearm         1.128928    0.35674243   FALSE FALSE
+## var_accel_forearm           3.500000    2.03343186   FALSE FALSE
+## avg_roll_forearm           27.666667    1.64101519   FALSE  TRUE
+## stddev_roll_forearm        87.000000    1.63082255   FALSE  TRUE
+## var_roll_forearm           87.000000    1.63082255   FALSE  TRUE
+## avg_pitch_forearm          83.000000    1.65120783   FALSE  TRUE
+## stddev_pitch_forearm       41.500000    1.64611151   FALSE  TRUE
+## var_pitch_forearm          83.000000    1.65120783   FALSE  TRUE
+## avg_yaw_forearm            83.000000    1.65120783   FALSE  TRUE
+## stddev_yaw_forearm         85.000000    1.64101519   FALSE  TRUE
+## var_yaw_forearm            85.000000    1.64101519   FALSE  TRUE
+## gyros_forearm_x             1.059273    1.51870350   FALSE FALSE
+## gyros_forearm_y             1.036554    3.77637346   FALSE FALSE
+## gyros_forearm_z             1.122917    1.56457038   FALSE FALSE
+## accel_forearm_x             1.126437    4.04647844   FALSE FALSE
+## accel_forearm_y             1.059406    5.11160942   FALSE FALSE
+## accel_forearm_z             1.006250    2.95586586   FALSE FALSE
+## magnet_forearm_x            1.012346    7.76679238   FALSE FALSE
+## magnet_forearm_y            1.246914    9.54031189   FALSE FALSE
+## magnet_forearm_z            1.000000    8.57710733   FALSE FALSE
+## classe                      1.469581    0.02548160   FALSE FALSE
+y<-which(nsv$freqRatio<1000.00)
+z<-length(y)
+y<-y[1:(length(y)-1)]
+training<-subset(training,select=-y)
+summary(training)
+##  kurtosis_roll_belt skewness_roll_belt kurtosis_yaw_arm skewness_yaw_arm
+##           :19216             :19216            :19216           :19216  
+##  #DIV/0!  :   10    #DIV/0!  :    9    #DIV/0! :   11   #DIV/0! :   11  
+##  -1.908453:    2    0        :    4    0.55844 :    2   -1.62032:    2  
+##  -0.01685 :    1    0.422463 :    2    0.65132 :    2   0.55053 :    2  
+##  -0.021024:    1    -0.003095:    1    -0.01548:    1   -0.00311:    1  
+##  -0.025513:    1    -0.010002:    1    -0.01749:    1   -0.00562:    1  
+##  (Other)  :  391    (Other)  :  389    (Other) :  389   (Other) :  389  
+##  kurtosis_roll_dumbbell kurtosis_picth_dumbbell skewness_roll_dumbbell
+##         :19216                 :19216                  :19216         
+##  #DIV/0!:    5          -0.5464:    2           #DIV/0!:    4         
+##  -0.2583:    2          -0.9334:    2           -0.9324:    2         
+##  -0.3705:    2          -2.0833:    2           0.111  :    2         
+##  -0.5855:    2          -2.0851:    2           1.0312 :    2         
+##  -2.0851:    2          -2.0889:    2           -0.0082:    1         
+##  (Other):  393          (Other):  396           (Other):  395         
+##  skewness_pitch_dumbbell classe  
+##         :19216           A:5580  
+##  -0.2328:    2           B:3797  
+##  -0.3521:    2           C:3422  
+##  -0.7036:    2           D:3216  
+##  0.109  :    2           E:3607  
+##  1.0326 :    2                   
+##  (Other):  396
+
+2.A dummy variable was created for the classe outcome.
+
+
+3.After eliminating the predictors with a frequency ration lower than 1000, 8 variables remained as relevant: kurtosis_roll_dumbbell,skewness_roll_belt,skewness_yaw_arm,kurtosis_yaw_arm,skewness_pitch_dumbbell,kurtosis_picth_dumbbell,skewness_roll_dumbbell,kurtosis_roll_dumbbell.
+
+
+4.Four of these relevant variables were plotted with class as the outcome to try and identify the type of relationship between outcome and predictors,but the plot is really crowded, so no much information can be obtained.
+
+
+5.Then, I tried to use the train function to get a linear regression using the “glm” and “lm” methods, but it was not possible to get any results, after 20 or 30 minutes the calculation crashed and the computer was blocked. Then , a simple linear regression with the 8 variables was tested but it was not possible to complete either. So, a linear model was tested between classe and one by one each of the 8 variables.
+
+
+6.For seven out of the 8 variables a lot of NA were obtained as parameters for the linear model, therefore, these 7 variables were discarded and at the end just the kurtosis_roll_belt was used for the linear regression.
+
+
+7.The next logical step would be to to test the model against the testing data, after reviewing the testing data file, it was noticed there is no classe variable but instead there is a problem ID variable. With these seemly new set of data, it was not possible to make the comparison, instead the training data was used again to make the prediction and compare the prediction to the data.
+
+dummies<-dummyVars(classe~.,data=training)
+training$classe<-as.numeric(training$classe)
+
+featurePlot(x=training[,c("kurtosis_roll_dumbbell","kurtosis_picth_dumbbell","skewness_roll_dumbbell","skewness_pitch_dumbbell")],y=training$classe,plot="pairs")
+
+
+model<-lm(classe~kurtosis_roll_belt,data=training)
+summary(model)
+## 
+## Call:
+## lm(formula = classe ~ kurtosis_roll_belt, data = training)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.7681 -1.7681  0.2319  1.2319  2.2319 
+## 
+## Coefficients:
+##                             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                  2.76806    0.01064 260.073   <2e-16 ***
+## kurtosis_roll_belt-0.01685   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.021024 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.025513 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.033935  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.034743 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.06016   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.060755 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.080411  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.100466  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.15095   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.169891 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.185023  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.198495  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.210458 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.213995  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.220867 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.225876  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.229831  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.262387 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.262453 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.263059 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.305292  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.30874  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.313326  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.317284 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.320589  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.325257  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.330885 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.343062  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.348378 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.348747  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.355147  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.356317  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.362443  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.364586 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.38962  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.393918  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.394959  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.420582 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.439374  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.454973 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.455287  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.455629  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.480396 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.487458 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.491527  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.497796 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.515064 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.526626 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.530943 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.532633 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.533999 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.540895 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.545117  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.551353 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.559214 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.561297  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.566715 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.576684  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.580337  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.5808   -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.583691  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.599303  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.605901 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.616496  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.652076  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.653661  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.656175  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.661891  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.668237 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.680648 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.684696 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.685743  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.686349  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.688262 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.692571  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.694352  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.69466  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.705695 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.71292  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.71398   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.735434 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.737208  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.738619  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.751481 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.758235  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.766929  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.768469  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.777217  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.777645  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.778041  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.787692  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.800821  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.802056 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.803018 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.811989 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.815662  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.822635  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.827113  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.83328  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.840933  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.853953  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.855793  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.856635  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.865852  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.870283 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.872595  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.875901  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.878332  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.881137  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.883651  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.887171  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.895105  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.898983 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.899574  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.900491 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.90118   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.90731   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.914195  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.914465  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.915614 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.916716 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.932389 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.943558  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-0.948194 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-0.955671  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.959985  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.960096  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-0.966623  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.982264  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-0.993607 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.99713  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-0.999965 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.003159 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.004926  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.005229  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.008624 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.01122   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.01804   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.021178 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.022813 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.048505  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.057741 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.062833  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.070393  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.07467  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.074811 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.075175 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.079006 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.080697 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.085449 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.087882 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.089855 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.09209   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.09659   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.09689  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.103938  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.108493  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.11502  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.119463  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.121477 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.122273 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.12297   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.124086 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.124513  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.125766  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.130043  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.131564  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.134641  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.135254  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.135878  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.143259  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.150337  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.159774 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.165101  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.175902  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.181496  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.192809  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.194596  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.195235 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.197825  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.211136 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.211699  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.213242  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.215624  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.215932 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.218921  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.218949  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.219362 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.220154 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.227048 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.23287  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.23382   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.244164 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.245367 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.246301 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.247113 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.249047 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.255676  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.258312  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.266169 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.269135 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.272977 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.273467 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.274333  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.276292  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.291123 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.292636  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.293601 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.304592  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.306424  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.310848  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.327801  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.333998  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.341813  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.34304  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.344168  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.346317  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.348439 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.349204 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.351144  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.351432  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.351837  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.353727 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.354272  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.364915  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.374453 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.38239  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.385691 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.386045  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.38738  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.389537 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.390647 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.398383 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.399691  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.402276 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.409521  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.409621  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.410118  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.411881  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.41305   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.415506  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.415856 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.423061  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.423943 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.43045  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.433855 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.440025  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.443997 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.45135  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.453776  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.458741 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.458774 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.468165 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.476962  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.479354 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.479423  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.480784  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.484928  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.486503  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.48989   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.498947 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.513346  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.526822  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.535312  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.536456 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.540822 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.5409   -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.541491  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.547455  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.550002  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.570327  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.583297  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.588218  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.601884  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.603377 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.607731  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.610954  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.620136 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.629928  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.631978  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.649792  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-1.655292 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.659796 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.667947  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.736374 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.784383 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.790088 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.792087  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.81429   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.837098  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-1.8935   -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.908453 -0.26806    1.04332  -0.257    0.797    
+## kurtosis_roll_belt-1.943894 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-1.961739 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-1.977301  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-1.996436 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-2.015633  2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt-2.02037  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-2.039849  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-2.040236  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-2.04042  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-2.055364 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-2.061186  1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt-2.072661  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt-2.077953 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-2.081633 -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt-2.085106 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-2.090909 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-2.108108 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt-2.121212 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt#DIV/0!   -0.56806    0.46669  -1.217    0.224    
+## kurtosis_roll_belt0.000673  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.005503  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.027016   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.061886  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.063266  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.078853   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt0.09443    2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.097078   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.120005  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.181074  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.184818  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.192236  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.20153   -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.240453  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.253748   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt0.263544  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.278814   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt0.306838  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.318906  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.382035   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt0.39415   -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.402777   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.405671   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt0.492561   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.514189   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt0.569764   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt0.644897  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt0.656377  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.664864   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.688925   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt0.734357  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt0.770162   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt0.801008   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt0.893767   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt1.02798    2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt1.060154   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt1.169569   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt1.204429  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt1.276937   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt1.304637  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt1.39553    1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt1.399044   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt1.439345   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt1.449642   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt1.571991  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt1.618699   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt1.652482   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt1.726027   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt1.775249  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt1.808692  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt1.880763   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt1.917907   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt11.433318  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt19.810708  0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt2.00117    2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt2.092345  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt2.169803   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt2.182306   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt2.246234   0.23194    1.47544   0.157    0.875    
+## kurtosis_roll_belt2.304744  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt2.35872   -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt2.397153   2.23194    1.47544   1.513    0.130    
+## kurtosis_roll_belt2.434548  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt2.488644  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt2.603688  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt2.738197   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt2.868586   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt2.902222   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt2.912541  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt20.819259 -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt21        -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt3.068386  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt3.460297  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt3.569859   1.23194    1.47544   0.835    0.404    
+## kurtosis_roll_belt33        -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt4.393964  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt4.983706  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt5.178817  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt5.379455  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt5.587755  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt5.681869  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt6.545935  -1.76806    1.47544  -1.198    0.231    
+## kurtosis_roll_belt7.004355  -0.76806    1.47544  -0.521    0.603    
+## kurtosis_roll_belt7.51529   -1.76806    1.47544  -1.198    0.231    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.475 on 19225 degrees of freedom
+## Multiple R-squared:  0.0203, Adjusted R-squared:  0.0001222 
+## F-statistic: 1.006 on 396 and 19225 DF,  p-value: 0.4573
+pred<-predict(model,training)
+qplot(classe,pred,colour=classe,data=training)
+
+
+plot(model,1,pch=19,cex=0.5,col="#00000010")
+
+
+
+CONCLUSIONS
+
+1.There is a lot of sources of error for this work, primarily from the inability to use a PCA analysis according to what has been learned in class.
+
+
+2.Another source of error is that just one variable among 160 was used the predict the outcome.
+
+
+3.The final linear model shows that some of the predictors have really high p-values, which makes them not meaningful for the model. Also the r2 and corrected r2 are very low, so the ability of the model to predict the outcome is really poor.
+
+
+4.Sincerely, I dedicated a lot of time to the project but I am really new to R programming and did not get the results that I would have liked (no excuse, I just needed way more time).
+
+```
+   

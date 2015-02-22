@@ -1,0 +1,64 @@
+---
+title: "Practical Machine Learning"
+author: "Paula Buitrago"
+output: pdf_document
+---
+
+The procedure used to predict the classe variable as a function of some of the predictors was:
+
+1. The nearZeroVar function was used to determine which variables had a lesser effect on the outcome based on the frequency ratio; then, those predictors with a frequency ratio lower than 1000 were discarded from the training data set.
+```{r}
+library(ggplot2);library(caret);
+setwd("C:/Users/Paula/Desktop/PML PROJECT")
+training<-read.csv("pml-training.csv")
+testing<-read.csv("pml-testing.csv")
+nsv<-nearZeroVar(training,saveMetrics=TRUE)
+nsv
+y<-which(nsv$freqRatio<1000.00)
+z<-length(y)
+y<-y[1:(length(y)-1)]
+training<-subset(training,select=-y)
+summary(training)
+```
+
+2. A dummy variable was created for the classe outcome.
+
+3. After eliminating the predictors with a frequency ration lower than 1000, 8 variables remained as relevant: kurtosis_roll_dumbbell,skewness_roll_belt,skewness_yaw_arm,kurtosis_yaw_arm,skewness_pitch_dumbbell,kurtosis_picth_dumbbell,skewness_roll_dumbbell,kurtosis_roll_dumbbell. 
+
+4. Four of these relevant variables were plotted with class as the outcome to try and identify the type of relationship between outcome and predictors,but the plot is really crowded, so no much information can be obtained.
+
+5. Then, I tried to use the train function to get a linear regression using the "glm" and "lm" methods, but it was not possible to get any results, after 20 or 30 minutes the calculation crashed and the computer was blocked. Then , a simple linear regression with the 8 variables was tested but it was not possible to complete either. So, a linear model was tested between classe and one by one each of the 8 variables.
+
+6. For seven out of the 8 variables a lot of NA were obtained as parameters for the linear model, therefore, these 7 variables were discarded and at the end just the kurtosis_roll_belt was used for the linear regression.
+
+7. The next logical step would be to to test the model against the testing data, after reviewing the testing data file, it was  noticed  there is no classe variable but instead there is a problem ID variable. With these seemly new set of data, it was not possible to make the comparison, instead the training data was used again to make the prediction and compare the prediction to the data. 
+
+```{r}
+dummies<-dummyVars(classe~.,data=training)
+training$classe<-as.numeric(training$classe)
+
+featurePlot(x=training[,c("kurtosis_roll_dumbbell","kurtosis_picth_dumbbell","skewness_roll_dumbbell","skewness_pitch_dumbbell")],y=training$classe,plot="pairs")
+
+model<-lm(classe~kurtosis_roll_belt,data=training)
+summary(model)
+
+pred<-predict(model,training)
+qplot(classe,pred,colour=classe,data=training)
+plot(model,1,pch=19,cex=0.5,col="#00000010")
+
+
+```
+
+CONCLUSIONS
+
+1. There is a lot of sources of error for this work, primarily from the inability to use a PCA analysis according to what has been learned in class.
+
+2. Another source of error is that just one variable among 160 was used the predict the outcome.
+
+3. The final linear model shows that some of the predictors have really high p-values, which makes them not meaningful for the model. Also the r2 and corrected r2 are very low, so the ability of the model to predict the outcome is really poor.
+
+4.Sincerely, I dedicated a lot of time to the project but I am really new to R programming and did not get the results that I would have liked (no excuse, I just needed way more time).
+
+
+```
+
